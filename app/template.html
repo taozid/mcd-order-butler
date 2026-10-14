@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>麦麦专属点单管家 · 规则编辑器</title>
+<style>
+:root{
+  --bg:#f6f8fb; --panel:#ffffff; --ink:#16202e; --muted:#6b7a90; --line:#e3e9f1;
+  --accent:#2f6feb; --accent-soft:#eef3fd; --ok:#0f9d58; --warn:#c0392b;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 16px 40px}
+
+header.top{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px;
+}
+header.top h1{margin:0;font-size:19px;letter-spacing:.2px;font-weight:650}
+header.top .sub{color:var(--muted);font-size:12.5px;margin-top:4px}
+.ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,input[type=text],input[type=number],textarea{
+  font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);
+  border-radius:8px;padding:7px 10px;min-height:36px;outline:none;
+}
+select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+button{
+  font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:8px;padding:7px 12px;min-height:36px;transition:.15s;
+}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.primary:hover{background:#2560d4;color:#fff}
+button.ghost{border-color:transparent;color:var(--muted)}
+button.ghost:hover{color:var(--warn);border-color:var(--line)}
+button.mini{padding:4px 9px;min-height:30px;font-size:12.5px}
+
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:18px;align-items:start}
+@media (max-width:940px){ .grid{grid-template-columns:1fr} }
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.panel > .hd{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 14px;border-bottom:1px solid var(--line);background:#fbfcfe;
+}
+.panel > .hd h2{margin:0;font-size:14px;font-weight:650}
+.panel > .bd{padding:14px}
+
+/* 分层图例 */
+.ladder{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.ladder .lv{
+  display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:8px;
+  background:#fbfcfe;border:1px solid var(--line);font-size:12.5px;
+}
+.ladder .lv .rank{
+  font-variant-numeric:tabular-nums;font-size:11px;color:#fff;border-radius:5px;
+  padding:1px 6px;min-width:30px;text-align:center;font-weight:600;
+}
+.ladder .lv .nm{font-weight:600}
+.ladder .lv .ds{color:var(--muted);font-size:11.5px}
+
+/* 规则卡 */
+.tiergroup{margin-top:14px}
+.tiergroup .tg-hd{
+  display:flex;align-items:center;gap:8px;font-size:12px;font-weight:650;
+  color:var(--muted);margin-bottom:8px;letter-spacing:.3px;
+}
+.tiergroup .tg-hd .bar{width:3px;height:13px;border-radius:2px}
+.rule{
+  display:flex;gap:10px;align-items:flex-start;padding:10px 11px;margin-bottom:8px;
+  border:1px solid var(--line);border-left:3px solid var(--line);border-radius:8px;background:#fff;
+}
+.rule.off{opacity:.5}
+.rule .ic{
+  flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;
+  font-size:12px;font-weight:700;color:#fff;
+}
+.rule .main{flex:1;min-width:0}
+.rule .ttl{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.rule .ttl .chip{font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-weight:500}
+.rule .note{color:var(--muted);font-size:12px;margin-top:2px}
+.rule .pv{font-size:12px;margin-top:5px;color:#334155;background:#f7f9fc;border:1px dashed var(--line);border-radius:6px;padding:4px 8px;word-break:break-all}
+.rule .pv b{font-weight:600;color:var(--muted);font-size:11px}
+.rule .acts{display:flex;gap:5px;flex:none}
+
+.empty{color:var(--muted);font-size:12.5px;text-align:center;padding:18px 0}
+
+/* 表单 */
+.form{border:1px solid var(--accent);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--accent-soft)}
+.form .row{margin-bottom:9px}
+.form label{display:block;font-size:12px;color:#334155;margin-bottom:4px;font-weight:600}
+.form .hint{font-size:11.5px;color:var(--muted);margin:-2px 0 8px}
+.form input[type=text],.form input[type=number],.form select{width:100%}
+.checks{display:flex;gap:7px;flex-wrap:wrap}
+.checks label{
+  display:inline-flex;align-items:center;gap:5px;font-weight:500;font-size:12px;
+  border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 9px;cursor:pointer;min-height:34px;
+}
+.checks label.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.form .btns{display:flex;gap:8px;margin-top:12px}
+
+/* 结果 */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px;margin-bottom:12px}
+.metric{border:1px solid var(--line);border-radius:8px;padding:8px 9px;background:#fbfcfe;text-align:center}
+.metric .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums}
+.metric .k{font-size:11px;color:var(--muted);margin-top:1px}
+
+.opt{border:1px solid var(--line);border-radius:9px;padding:11px 12px;margin-bottom:11px;background:#fff}
+.opt:first-of-type{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.opt .oh{font-weight:650;font-size:13.5px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.opt .oh .idx{flex:none;background:var(--accent);color:#fff;border-radius:5px;font-size:11px;padding:1px 7px;font-weight:700}
+.opt:not(:first-of-type) .oh .idx{background:#94a3b8}
+.opt .om{font-size:12px;color:var(--muted);margin:3px 0 8px;font-variant-numeric:tabular-nums}
+.pick{border:1px solid var(--line);border-radius:8px;padding:10px 11px;margin-bottom:9px;background:#fff}
+.pick .nm{font-weight:650;font-size:14px}
+.pick .optag{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:5px;padding:1px 6px;margin-left:6px;font-weight:500}
+.pick .why{margin-top:7px;display:flex;flex-direction:column;gap:4px}
+.trace{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#334155}
+.trace .tag{
+  flex:none;font-size:10.5px;border-radius:5px;padding:1px 6px;color:#fff;font-weight:600;
+}
+.trace .tag.plus{background:#12a06a} .trace .tag.minus{background:#c0392b}
+.trace.plain .tag{background:#94a3b8}
+
+.rej{border:1px solid var(--line);border-left:3px solid #c0392b;border-radius:8px;padding:8px 10px;margin-bottom:7px;background:#fff}
+.rej .nm{font-weight:600;font-size:13px}
+.rej .rs{font-size:12px;color:#7f1d1d;margin-top:2px}
+.rej .sup{font-size:11.5px;color:var(--muted);margin-top:3px}
+.rej .sup b{color:#b45309}
+
+.note-box{border:1px solid var(--line);border-radius:8px;padding:10px 11px;background:#fffaf3;color:#8a5a12;font-size:12.5px}
+.note-box.ok{background:#f2fbf6;color:#146c43;border-color:#cdeadb}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.kv span{font-size:11.5px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;background:#fbfcfe}
+.foot{color:var(--muted);font-size:11.5px;margin-top:14px;line-height:1.7}
+details.raw{margin-top:10px}
+details.raw textarea{width:100%;min-height:120px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>麦麦专属点单管家</h1>
+    <div class="sub">个性化规则驱动的麦当劳点单决策引擎 · 规则可增删改，冲突按分层优先级仲裁，每条决策都可解释</div>
+  </div>
+  <div class="ctrl">
+    <select id="slot" title="餐次">
+      <option value="breakfast">早餐</option>
+      <option value="lunch" selected>午餐</option>
+      <option value="dinner">晚餐</option>
+      <option value="latenight">夜宵</option>
+    </select>
+    <select id="group" title="人群">
+      <option value="adult" selected>成人</option>
+      <option value="child">儿童</option>
+      <option value="elder">老人</option>
+      <option value="pregnant">孕期</option>
+    </select>
+    <button class="primary" id="run">生成推荐</button>
+  </div>
+</header>
+
+<div class="grid">
+
+  <!-- 左：规则 -->
+  <section class="panel">
+    <div class="hd">
+      <h2>我的规则</h2>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="newType" style="min-height:34px;padding:5px 9px"></select>
+        <button class="primary mini" id="add">＋ 新增</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="ladder" id="ladder"></div>
+      <div id="rules"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="mini" id="exp">导出 JSON</button>
+        <button class="mini" id="imp">导入 JSON</button>
+        <button class="mini" id="demo">载入示例</button>
+        <button class="mini ghost" id="clr">清空</button>
+        <input type="file" id="file" accept=".json" hidden>
+      </div>
+      <details class="raw"><summary style="font-size:12px;color:var(--muted);cursor:pointer">查看 / 编辑原始 JSON</summary>
+        <textarea id="raw" spellcheck="false"></textarea>
+        <button class="mini" id="applyRaw" style="margin-top:6px">应用这份 JSON</button>
+      </details>
+      <div class="foot">
+        规则存在你本机浏览器（localStorage），不上传任何服务器。<br>
+        改完点「生成推荐」即时看到结果。
+      </div>
+    </div>
+  </section>
+
+  <!-- 右：结果 -->
+  <section class="panel">
+    <div class="hd"><h2>推荐结果</h2><span id="ctxTag" style="font-size:11.5px;color:var(--muted)"></span></div>
+    <div class="bd" id="out">
+      <div class="empty">点右上角「生成推荐」</div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<!--INJECT_ENGINE-->
+<!--INJECT_DATA-->
+<script>
+(function(){
+'use strict';
+const { RULE_TYPES, RULE_TYPE_MAP, TIERS, TIER_RANK, MEAL_SLOT_LABEL, GROUP_LABEL } = McdButler;
+const TIER_COLOR = {
+  safety:'#c0392b', health:'#e07b39', person:'#7a5af5',
+  'meal-slot':'#2f6feb', preference:'#12a06a', custom:'#8a6d3b', value:'#c9a227'
+};
+const SLOT_OPTS = [['breakfast','早餐'],['lunch','午餐'],['dinner','晚餐'],['latenight','夜宵']];
+const GROUP_OPTS = [['adult','成人'],['child','儿童'],['elder','老人'],['pregnant','孕期']];
+const KEY = 'mcd-butler-profile-v1';
+const clone = o => JSON.parse(JSON.stringify(o));
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid = () => 'r-' + Math.random().toString(36).slice(2,8);
+
+let state = { profile: clone(window.__PROFILE__ || {rules:[]}), editing: null, result: null };
+try { const s = localStorage.getItem(KEY); if (s) state.profile = JSON.parse(s); } catch(e){}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(state.profile)); }catch(e){} };
+
+const $ = id => document.getElementById(id);
+const tierOf = r => (RULE_TYPE_MAP[r.type]||{}).tier || 'custom';
+
+/* ---------- 分层图例 ---------- */
+$('ladder').innerHTML = TIERS.slice().sort((a,b)=>b.rank-a.rank).map(t =>
+  `<div class="lv"><span class="rank" style="background:${TIER_COLOR[t.id]}">${t.rank}</span>
+   <span class="nm">${esc(t.label)}</span><span class="ds">${esc(t.desc)}</span></div>`).join('');
+
+/* ---------- 新增类型下拉 ---------- */
+$('newType').innerHTML = TIERS.slice().sort((a,b)=>b.rank-a.rank).map(t => {
+  const list = RULE_TYPES.filter(x => x.tier === t.id);
+  if (!list.length) return '';
+  return `<optgroup label="${esc(t.label)}">` +
+    list.map(x => `<option value="${esc(x.typeId)}">${esc(x.label)}</option>`).join('') + `</optgroup>`;
+}).join('');
+
+/* ---------- 参数预览 ---------- */
+function paramPreview(r){
+  const t = RULE_TYPE_MAP[r.type]; if(!t) return '';
+  const p = r.params || {};
+  return (t.paramsSchema||[]).map(f => {
+    let v = p[f.key];
+    if (f.type === 'select') {
+      const o = (f.options||[]).find(o => String(o.value) === String(v));
+      v = o ? o.label : v;
+    }
+    if (Array.isArray(v)) v = v.join('、');
+    if (v === '' || v == null) return '';
+    return `<span style="margin-right:10px"><b>${esc(f.label)}</b> ${esc(v)}${f.unit?esc(f.unit):''}</span>`;
+  }).filter(Boolean).join('') || '<b>（无参数）</b>';
+}
+function scopeText(r){
+  const s = r.scope || {};
+  const f = (arr, map) => (!arr || !arr.length || arr.includes('*')) ? '全部' :
+    arr.map(x => map[x] || x).join('/');
+  return `餐次 ${f(s.mealSlots, MEAL_SLOT_LABEL)} · 人群 ${f(s.personGroups, GROUP_LABEL)}`;
+}
+
+/* ---------- 渲染规则列表 ---------- */
+function renderRules(){
+  const rules = state.profile.rules || (state.profile.rules = []);
+  if (!rules.length) { $('rules').innerHTML = '<div class="empty">还没有规则，右上角选一个类型新增 ↓</div>'; return; }
+  const groups = TIERS.slice().sort((a,b)=>b.rank-a.rank).map(t => {
+    const list = rules.filter(r => tierOf(r) === t.id);
+    if (!list.length) return '';
+    return `<div class="tiergroup">
+      <div class="tg-hd"><span class="bar" style="background:${TIER_COLOR[t.id]}"></span>${esc(t.label)} · ${list.length}</div>
+      ${list.map(ruleCard).join('')}</div>`;
+  }).join('');
+  $('rules').innerHTML = groups;
+}
+
+function ruleCard(r){
+  const t = RULE_TYPE_MAP[r.type] || {label:r.type, icon:'?', tier:'custom'};
+  const off = r.enabled === false;
+  return `<div class="rule ${off?'off':''}" style="border-left-color:${TIER_COLOR[t.tier]}" data-id="${esc(r.id)}">
+    <div class="ic" style="background:${TIER_COLOR[t.tier]}">${esc(t.icon||'?')}</div>
+    <div class="main">
+      <div class="ttl">${esc(t.label)} <span class="chip">${esc((TIERS.find(x=>x.id===t.tier)||{}).label||t.tier)}</span>
+        ${off?'<span class="chip">已停用</span>':''}</div>
+      ${r.note?`<div class="note">${esc(r.note)}</div>`:''}
+      <div class="pv">${paramPreview(r)}</div>
+      <div class="note" style="margin-top:4px">作用域：${esc(scopeText(r))}</div>
+    </div>
+    <div class="acts">
+      <button class="mini" data-act="toggle">${off?'启用':'停用'}</button>
+      <button class="mini" data-act="edit">编辑</button>
+      <button class="mini" data-act="del">删</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- 编辑表单 ---------- */
+function renderForm(id){
+  const r = (state.profile.rules||[]).find(x => x.id === id);
+  if (!r) { state.editing = null; renderRules(); return; }
+  const t = RULE_TYPE_MAP[r.type];
+  const fields = (t.paramsSchema||[]).map(f => {
+    const v = (r.params||{})[f.key];
+    let input;
+    if (f.type === 'select') {
+      input = `<select data-k="${esc(f.key)}">` + (f.options||[]).map(o =>
+        `<option value="${esc(o.value)}" ${String(o.value)===String(v==null?f.default:v)?'selected':''}>${esc(o.label)}</option>`).join('') + `</select>`;
+    } else if (f.type === 'number') {
+      input = `<input type="number" data-k="${esc(f.key)}" value="${esc(v==null?(f.default==null?0:f.default):v)}">`;
+    } else {
+      const val = Array.isArray(v) ? v.join('、') : (v==null?'':v);
+      input = `<input type="text" data-k="${esc(f.key)}" value="${esc(val)}" placeholder="${esc(f.placeholder||'')}">`;
+    }
+    return `<div class="row"><label>${esc(f.label)}${f.unit?`（${esc(f.unit)}）`:''}</label>${input}</div>`;
+  }).join('');
+
+  const chk = (name, opts, cur) => opts.map(([v,l]) =>
+    `<label class="${(!cur||!cur.length||cur.includes('*')||cur.includes(v))?'on':''}">
+      <input type="checkbox" data-scope="${name}" value="${v}" ${(!cur||!cur.length||cur.includes('*')||cur.includes(v))?'checked':''} style="margin:0">${l}</label>`).join('');
+
+  const form = document.createElement('div');
+  form.className = 'form';
+  form.innerHTML = `
+    <div style="font-weight:650;font-size:13px;margin-bottom:2px">${esc(t.label)}</div>
+    <div class="hint">${esc(t.hint||'')}</div>
+    <div class="row"><label>备注（给自己看的说明）</label>
+      <input type="text" data-k="__note" value="${esc(r.note||'')}" placeholder="例：胃不好，最多微辣"></div>
+    ${fields}
+    <div class="row"><label>作用域</label>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:5px">餐次</div>
+      <div class="checks">${chk('mealSlots', SLOT_OPTS, (r.scope||{}).mealSlots)}</div>
+      <div style="font-size:11.5px;color:var(--muted);margin:7px 0 5px">人群</div>
+      <div class="checks">${chk('personGroups', GROUP_OPTS, (r.scope||{}).personGroups)}</div>
+    </div>
+    <div class="btns">
+      <button class="primary mini" data-act="save">保存</button>
+      <button class="mini" data-act="cancel">取消</button>
+    </div>`;
+  renderRules();
+  const escId = s => (typeof CSS !== 'undefined' && CSS.escape) ? CSS.escape(s) : String(s).replace(/["\\]/g, '\\$&');
+  const host = document.querySelector(`.rule[data-id="${escId(id)}"]`);
+  if (host) host.parentNode.insertBefore(form, host.nextSibling);
+  form.querySelector('input,select').focus();
+}
+
+/* ---------- 收集表单 ---------- */
+function collectForm(form, r){
+  const t = RULE_TYPE_MAP[r.type];
+  r.params = r.params || {};
+  form.querySelectorAll('[data-k]').forEach(el => {
+    const k = el.getAttribute('data-k');
+    if (k === '__note') { r.note = el.value.trim(); return; }
+    const f = (t.paramsSchema||[]).find(x => x.key === k);
+    if (!f) return;
+    let v = el.value;
+    if (f.type === 'number') v = Number(v);
+    else if (f.type === 'tags') v = v.split(/[,、，\s]+/).filter(Boolean);
+    r.params[k] = v;
+  });
+  const pick = name => {
+    const all = [...form.querySelectorAll(`[data-scope="${name}"]`)];
+    const on = all.filter(x => x.checked).map(x => x.value);
+    return (on.length === 0 || on.length === all.length) ? ['*'] : on;
+  };
+  r.scope = { mealSlots: pick('mealSlots'), personGroups: pick('personGroups') };
+}
+
+/* ---------- 结果渲染 ---------- */
+function run(){
+  const ctx = { mealSlot: $('slot').value, personGroup: $('group').value, coupons: [] };
+  $('ctxTag').textContent = `${MEAL_SLOT_LABEL[ctx.mealSlot]} · ${GROUP_LABEL[ctx.personGroup]}`;
+  const res = McdButler.recommend({ profile: state.profile, menu: window.__MENU__, ctx, topN: 3 });
+  state.result = res;
+  $('out').innerHTML = renderResult(res, ctx);
+}
+
+function renderResult(res, ctx){
+  if (!res.ok) {
+    return `<div class="note-box">⚠️ ${esc(res.reason)}</div>
+      <div class="foot">解决思路：放宽某条硬约束（如热量预算），或新增一条允许的规则。</div>`;
+  }
+  const m = res.metrics;
+
+  const pickHtml = p => {
+    const opt = Object.keys(p.options||{});
+    const why = p.trace.length ? p.trace.map(t =>
+      `<div class="trace ${t.effect==='bonus'||t.effect==='penalty'?'':'plain'}">
+        <span class="tag ${t.effect==='bonus'?'plus':(t.effect==='penalty'?'minus':'')}">${t.effect==='bonus'?'+'+t.weight:(t.effect==='penalty'?t.weight:'记')}</span>
+        <span><b style="color:#334155">${esc(t.label)}</b> —— ${esc(t.reason)}</span></div>`).join('')
+      : '<div class="trace plain"><span class="tag">—</span><span>无规则命中，按标准份量与价格推荐</span></div>';
+    return `<div class="pick">
+      <div class="nm">${esc(p.item.name)}
+        ${opt.length?`<span class="optag">${opt.map(o=>esc(o)).join(' · ')}</span>`:''}
+        <span style="font-weight:400;color:var(--muted);font-size:12px"> ¥${esc(p.item.price)} · ${esc(p.item.calories)}kcal</span></div>
+      <div class="why">${why}</div></div>`;
+  };
+
+  // 给几个选项，不是一个答案
+  const opts = (res.options && res.options.length ? res.options : [{picks:res.picks, summary:res.summary}]);
+  const optionsHtml = opts.map((o, i) => {
+    const lines = String(o.summary||'').split('\n');
+    return `<div class="opt">
+      <div class="oh"><span class="idx">${i+1}</span><span>${esc((lines[1]||'').replace(/^推荐：/,''))}</span></div>
+      <div class="om">${esc(lines[2]||'')}</div>
+      ${o.picks.map(pickHtml).join('')}</div>`;
+  }).join('');
+
+  const bundle = (res.bundleTrace||[]).filter(t=>t.effect!=='pass').length || (res.bundleTrace||[]).length
+    ? `<div style="margin:12px 0 6px;font-size:12.5px;font-weight:650;color:var(--muted)">整餐约束核对</div>` +
+      (res.bundleTrace||[]).map(t =>
+        `<div class="trace plain"><span class="tag" style="background:${t.effect==='pass'?'#94a3b8':'#c0392b'}">${t.effect==='pass'?'通过':'拦截'}</span>
+        <span><b>${esc(t.label)}</b> —— ${esc(t.reason)}</span></div>`).join('')
+    : '';
+
+  const rej = res.rejected.length ? `<div style="margin:14px 0 6px;font-size:12.5px;font-weight:650;color:var(--muted)">
+      被排除（${res.rejected.length}）</div>` + res.rejected.slice(0,12).map(x =>
+      `<div class="rej"><div class="nm">${esc(x.item.name)}
+        <span style="font-weight:400;color:var(--muted);font-size:11.5px">¥${esc(x.item.price)} · ${esc(x.item.calories)}kcal</span></div>
+        <div class="rs">${esc(x.reason)}</div>
+        ${(x.suppressed&&x.suppressed.length)?`<div class="sup">⚔ 这条否决压掉了你的偏好：<b>${x.suppressed.map(s=>esc(s.label)).join('、')}</b>（分层优先级 ${TIER_RANK[x.tier]} &gt; ${TIER_RANK[x.suppressed[0].tier]}）</div>`:''}
+      </div>`).join('') : '';
+
+  const oo = res.config.orderOptions || {};
+  const cfg = Object.keys(oo).length ? `<div style="margin:14px 0 6px;font-size:12.5px;font-weight:650;color:var(--muted)">订单固定设置</div>
+      <div class="kv">${Object.keys(oo).map(k=>`<span>${esc(k)} = ${esc(oo[k])}</span>`).join('')}</div>` : '';
+
+  return `<div class="note-box ok">${esc(res.summary).replace(/\n/g,'<br>')}</div>
+    <div style="font-size:12.5px;font-weight:650;color:var(--muted);margin:14px 0 7px">
+      符合你规则的 ${opts.length} 个选项（主食互不重复，选哪个你定）</div>
+    ${optionsHtml}${bundle}${cfg}${rej}`;
+}
+
+/* ---------- 事件 ---------- */
+$('run').onclick = run;
+$('add').onclick = () => {
+  const typeId = $('newType').value;
+  const t = RULE_TYPE_MAP[typeId]; if (!t) return;
+  const r = { id: uid(), type: typeId, enabled: true, note: '', params: {}, scope: { mealSlots:['*'], personGroups:['*'] } };
+  (t.paramsSchema||[]).forEach(f => { if (f.default != null) r.params[f.key] = f.default; });
+  (state.profile.rules = state.profile.rules || []).push(r);
+  save(); state.editing = r.id; renderForm(r.id);
+};
+$('rules').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-act]'); if (!btn) return;
+  const id = btn.closest('.rule').getAttribute('data-id');
+  const r = state.profile.rules.find(x => x.id === id); if (!r) return;
+  const act = btn.getAttribute('data-act');
+  if (act === 'toggle') { r.enabled = r.enabled === false; save(); renderRules(); }
+  else if (act === 'del') { state.profile.rules = state.profile.rules.filter(x => x.id !== id); save(); renderRules(); }
+  else if (act === 'edit') { state.editing = id; renderForm(id); }
+});
+document.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn || !btn.closest('.form')) return;
+  const act = btn.getAttribute('data-act');
+  const form = btn.closest('.form');
+  const r = state.profile.rules.find(x => x.id === state.editing);
+  if (act === 'save' && r) { collectForm(form, r); save(); }
+  state.editing = null; renderRules();
+});
+$('exp').onclick = () => {
+  const blob = new Blob([JSON.stringify(state.profile, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'mcd-butler-profile.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+};
+$('imp').onclick = () => $('file').click();
+$('file').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { try { state.profile = JSON.parse(rd.result); save(); renderRules(); } catch(err){ alert('JSON 解析失败'); } };
+  rd.readAsText(f); e.target.value = '';
+};
+$('demo').onclick = () => { state.profile = clone(window.__PROFILE__); save(); renderRules(); run(); };
+$('clr').onclick = () => { if(confirm('清空所有规则？')){ state.profile = {rules:[]}; save(); renderRules(); } };
+$('raw').value = JSON.stringify(state.profile, null, 2);
+$('applyRaw').onclick = () => {
+  try { state.profile = JSON.parse($('raw').value); save(); renderRules(); run(); }
+  catch(e){ alert('JSON 解析失败：' + e.message); }
+};
+$('slot').onchange = $('group').onchange = () => { if (state.result) run(); };
+
+renderRules();
+run();
+})();
+</script>
+</body>
+</html>

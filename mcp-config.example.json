@@ -1,0 +1,12 @@
+{
+  "_note": "脱敏示例：只含环境变量占位符，不含任何真实 Token。复制为 mcp.json 后把 ${MCD_MCP_TOKEN} 换成你在 https://open.mcd.cn/mcp 申请的 MCP Token，或直接由运行环境注入该环境变量。",
+  "mcpServers": {
+    "mcd-mcp": {
+      "type": "http",
+      "url": "https://mcp.mcd.cn",
+      "headers": {
+        "Authorization": "Bearer ${MCD_MCP_TOKEN}"
+      }
+    }
+  }
+}

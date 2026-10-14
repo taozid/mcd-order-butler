@@ -1,0 +1,130 @@
+{
+  "_note": "示例画像：一位减脂期、中午在公司吃、周末带娃的上班族。copy 一份改写成你自己的规则即可。",
+  "meta": {
+    "name": "减脂上班族（示例）",
+    "owner": "demo",
+    "updatedAt": "2026-10-14"
+  },
+  "rules": [
+    {
+      "id": "r-no-cilantro",
+      "type": "diet.avoid-ingredient",
+      "enabled": true,
+      "note": "不吃香菜和洋葱",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "keywords": ["香菜", "洋葱"] }
+    },
+    {
+      "id": "r-spice",
+      "type": "diet.spice-cap",
+      "enabled": true,
+      "note": "胃不好，最多微辣",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "maxLevel": 1 }
+    },
+    {
+      "id": "r-lunch-cal",
+      "type": "health.calorie-budget",
+      "enabled": true,
+      "note": "午餐控卡",
+      "scope": { "mealSlots": ["lunch"], "personGroups": ["*"] },
+      "params": { "budget": 600 }
+    },
+    {
+      "id": "r-dinner-cal",
+      "type": "health.calorie-budget",
+      "enabled": true,
+      "note": "晚餐更严格",
+      "scope": { "mealSlots": ["dinner"], "personGroups": ["*"] },
+      "params": { "budget": 480 }
+    },
+    {
+      "id": "r-sodium",
+      "type": "health.sodium-cap",
+      "enabled": true,
+      "note": "控盐",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "maxMg": 1500 }
+    },
+    {
+      "id": "r-sugar",
+      "type": "health.sugar-cap",
+      "enabled": true,
+      "note": "控糖，戒含糖饮料",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "maxGram": 25 }
+    },
+    {
+      "id": "r-like",
+      "type": "taste.like",
+      "enabled": true,
+      "note": "偏爱鱼和鸡，喜欢玉米",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "keywords": ["鱼", "鸡肉", "玉米"] }
+    },
+    {
+      "id": "r-dislike",
+      "type": "taste.dislike",
+      "enabled": true,
+      "note": "不喜欢酸黄瓜",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "keywords": ["酸黄瓜"] }
+    },
+    {
+      "id": "r-no-dessert",
+      "type": "custom.no-category",
+      "enabled": true,
+      "note": "减脂期不要甜品",
+      "scope": { "mealSlots": ["*"], "personGroups": ["adult"] },
+      "params": { "categories": ["甜品"] }
+    },
+    {
+      "id": "r-no-sauce",
+      "type": "custom.item-option",
+      "enabled": true,
+      "note": "所有堡去酱，少摄入热量",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "keywords": ["堡"], "optionKey": "去酱", "optionValue": "true" }
+    },
+    {
+      "id": "r-dinein",
+      "type": "custom.order-option",
+      "enabled": true,
+      "note": "默认堂食",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "optionKey": "diningType", "optionValue": "堂食" }
+    },
+    {
+      "id": "r-budget",
+      "type": "value.price-cap",
+      "enabled": true,
+      "note": "一顿不超过 45",
+      "scope": { "mealSlots": ["*"], "personGroups": ["*"] },
+      "params": { "maxYuan": 45 }
+    },
+    {
+      "id": "r-child-veto",
+      "type": "person.group-veto",
+      "enabled": true,
+      "note": "带娃时的禁忌（只在儿童人群生效）",
+      "scope": { "mealSlots": ["*"], "personGroups": ["child"] },
+      "params": { "group": "child" }
+    },
+    {
+      "id": "r-child-milk",
+      "type": "person.required-category",
+      "enabled": true,
+      "note": "娃那一份必须带牛奶或蔬果",
+      "scope": { "mealSlots": ["*"], "personGroups": ["child"] },
+      "params": { "keywords": ["牛奶"] }
+    },
+    {
+      "id": "r-child-bonus",
+      "type": "person.nutrition-bonus",
+      "enabled": true,
+      "note": "给娃优先高钙高蛋白",
+      "scope": { "mealSlots": ["*"], "personGroups": ["child"] },
+      "params": { "keywords": ["钙", "牛奶", "蛋", "玉米"], "group": "child" }
+    }
+  ]
+}
